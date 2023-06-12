@@ -60,6 +60,7 @@ cd libsnark-tutorial
 
 git submodule init && git submodule update
 
+cd depends/libsnark
 /\*in depends/libsnark/.gitmodules replace git: with https:\*/
 
 /\*download dependencies of libsnark\*/
