@@ -55,17 +55,28 @@ int main()
 
   const r1cs_ppzksnark_proof<default_r1cs_ppzksnark_pp> proof = r1cs_ppzksnark_prover<default_r1cs_ppzksnark_pp>(keypair.pk, pb.primary_input(), pb.auxiliary_input());
 
-  bool verified = r1cs_ppzksnark_verifier_strong_IC<default_r1cs_ppzksnark_pp>(keypair.vk, pb.primary_input(), proof);
+  r1cs_ppzksnark_verification_key<default_r1cs_ppzksnark_pp> vk = keypair.vk;
+
+  // Proover serializes verification key and proof to files and sends them to Verifier
+  print_vk_to_file<default_r1cs_ppzksnark_pp>(vk, "../vk_data");
+  print_proof_to_file<default_r1cs_ppzksnark_pp>(proof, "../proof_data");
+
+  // Verifier receives and deserializes vk and proof
+  r1cs_ppzksnark_verification_key<default_r1cs_ppzksnark_pp> vk_deserialized;
+  read_vk_from_file<default_r1cs_ppzksnark_pp>(vk_deserialized, "../vk_data");
+
+  r1cs_ppzksnark_proof<default_r1cs_ppzksnark_pp> proof_deserialized;
+  read_proof_from_file(proof_deserialized, "../proof_data");
+
+  // Verifier verifies the proof
+  bool verified = r1cs_ppzksnark_verifier_strong_IC<default_r1cs_ppzksnark_pp>(vk_deserialized, pb.primary_input(), proof_deserialized);
 
   cout << "Number of R1CS constraints: " << constraint_system.num_constraints() << endl;
   cout << "Primary (public) input: " << pb.primary_input() << endl;
   cout << "Auxiliary (private) input: " << pb.auxiliary_input() << endl;
-  cout << "Verification status: " << verified << endl;
+  cout << "Deserialized Verification status: " << verified << endl;
 
-  const r1cs_ppzksnark_verification_key<default_r1cs_ppzksnark_pp> vk = keypair.vk;
-
-  print_vk_to_file<default_r1cs_ppzksnark_pp>(vk, "../build/vk_data");
-  print_proof_to_file<default_r1cs_ppzksnark_pp>(proof, "../build/proof_data");
+  assert(vk == vk_deserialized);
 
   return 0;
 }
